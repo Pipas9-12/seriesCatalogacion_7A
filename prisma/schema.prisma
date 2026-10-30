@@ -1,0 +1,44 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Platform {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  series    Series[]
+  ratings   Rating[]
+}
+
+model Series {
+  id         String   @id @default(cuid())
+  name       String
+  platformId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  platform   Platform @relation(fields: [platformId], references: [id], onDelete: Restrict)
+  ratings    Rating[]
+
+  @@unique([name, platformId])
+  @@index([platformId])
+}
+
+model Rating {
+  id         String   @id @default(cuid())
+  platformId String
+  seriesId   String
+  score      Int
+  observation String  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  platform   Platform @relation(fields: [platformId], references: [id], onDelete: Restrict)
+  series     Series   @relation(fields: [seriesId], references: [id], onDelete: Cascade)
+
+  @@index([platformId])
+  @@index([seriesId])
+}
